@@ -1,0 +1,13 @@
+C:\StartingWeb\NautaSystem\NautaRobbot\bin\Debug\net8.0\NautaRobbot.deps.json
+C:\StartingWeb\NautaSystem\NautaRobbot\bin\Debug\net8.0\NautaRobbot.dll
+C:\StartingWeb\NautaSystem\NautaRobbot\bin\Debug\net8.0\NautaRobbot.pdb
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\NautaRobbot.csproj.AssemblyReference.cache
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\NautaRobbot.GeneratedMSBuildEditorConfig.editorconfig
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\NautaRobbot.AssemblyInfoInputs.cache
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\NautaRobbot.AssemblyInfo.cs
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\NautaRobbot.csproj.CoreCompileInputs.cache
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\NautaRobbot.sourcelink.json
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\NautaRobbot.dll
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\refint\NautaRobbot.dll
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\NautaRobbot.pdb
+C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net8.0\ref\NautaRobbot.dll
