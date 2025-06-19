@@ -7,10 +7,13 @@
 
   <ItemGroup>
     <Folder Include="Base\" />
+    <Folder Include="Model\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="3.0.1" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+     <Reference Include="System.Web" />
   </ItemGroup>
 
 </Project>

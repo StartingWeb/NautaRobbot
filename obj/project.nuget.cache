@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "HPenW48rzD8=",
+  "dgSpecHash": "o4HS7CG5TyQ=",
   "success": true,
-  "projectFilePath": "C:\\StartingWeb\\NautaSystem\\NautaRobbot\\NautaRobbot.csproj",
+  "projectFilePath": "C:\\StartingWeb\\NautaRobbot\\NautaRobbot.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Starting Web\\.nuget\\packages\\bcrypt.net-next\\3.0.1\\bcrypt.net-next.3.0.1.nupkg.sha512"
+    "C:\\Users\\Starting Web\\.nuget\\packages\\bcrypt.net-next\\3.0.1\\bcrypt.net-next.3.0.1.nupkg.sha512",
+    "C:\\Users\\Starting Web\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512"
   ],
   "logs": []
 }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\StartingWeb\\NautaSystem\\NautaRobbot\\NautaRobbot.csproj": {}
+    "C:\\StartingWeb\\NautaRobbot\\NautaRobbot.csproj": {}
   },
   "projects": {
-    "C:\\StartingWeb\\NautaSystem\\NautaRobbot\\NautaRobbot.csproj": {
+    "C:\\StartingWeb\\NautaRobbot\\NautaRobbot.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\StartingWeb\\NautaSystem\\NautaRobbot\\NautaRobbot.csproj",
+        "projectUniqueName": "C:\\StartingWeb\\NautaRobbot\\NautaRobbot.csproj",
         "projectName": "NautaRobbot",
-        "projectPath": "C:\\StartingWeb\\NautaSystem\\NautaRobbot\\NautaRobbot.csproj",
+        "projectPath": "C:\\StartingWeb\\NautaRobbot\\NautaRobbot.csproj",
         "packagesPath": "C:\\Users\\Starting Web\\.nuget\\packages\\",
-        "outputPath": "C:\\StartingWeb\\NautaSystem\\NautaRobbot\\obj\\",
+        "outputPath": "C:\\StartingWeb\\NautaRobbot\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -53,6 +53,10 @@
             "BCrypt.Net-Next": {
               "target": "Package",
               "version": "[3.0.1, )"
+            },
+            "Microsoft.CSharp": {
+              "target": "Package",
+              "version": "[4.7.0, )"
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201\\RuntimeIdentifierGraph.json"

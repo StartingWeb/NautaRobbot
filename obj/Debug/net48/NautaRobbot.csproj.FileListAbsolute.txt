@@ -10,3 +10,15 @@ C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net48\NautaRobbot.sourcelink.js
 C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net48\NautaRob.AA47C3ED.Up2Date
 C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net48\NautaRobbot.dll
 C:\StartingWeb\NautaSystem\NautaRobbot\obj\Debug\net48\NautaRobbot.pdb
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRobbot.csproj.AssemblyReference.cache
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRobbot.GeneratedMSBuildEditorConfig.editorconfig
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRobbot.AssemblyInfoInputs.cache
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRobbot.AssemblyInfo.cs
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRobbot.csproj.CoreCompileInputs.cache
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRobbot.sourcelink.json
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRobbot.dll
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRobbot.pdb
+C:\StartingWeb\NautaRobbot\bin\Debug\net48\NautaRobbot.dll
+C:\StartingWeb\NautaRobbot\bin\Debug\net48\NautaRobbot.pdb
+C:\StartingWeb\NautaRobbot\bin\Debug\net48\BCrypt.Net-Next.dll
+C:\StartingWeb\NautaRobbot\obj\Debug\net48\NautaRob.AA47C3ED.Up2Date
