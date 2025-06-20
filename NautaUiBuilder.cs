@@ -183,7 +183,7 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-4""></div>"));
         panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3"">"));
 
-        if (configFormulario.ocultarBotaoAdicionar)
+        if (!configFormulario.ocultarBotaoAdicionar)
         {
             panel.Controls.Add(new LiteralControl(@"        <button class=""botaoPrimaryPadrao"" 
                                                             onclick=""window.location.href='?modo=i'; return false;"">
@@ -246,6 +246,59 @@ public class NautaUiBuilder
         return panel;
     }
 
+    public Panel MontarUIFormularioAdicionar(List<CompBase> ListComponentesUI, NautaModelFormulario configFormulario)
+    {
+        var panel = new Panel();
+        //Cabeçalho - INI
+        panel.Controls.Add(new LiteralControl(@"<div id=""div_container_cabecalho"" class=""container-fluid container-cabecalho-padrao"">"));
+        panel.Controls.Add(new LiteralControl(@"    <div class=""row"">"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-5"">"));
+        panel.Controls.Add(new LiteralControl(@"            <span>" + configFormulario.tituloPrincipal + "</span>"));
+        panel.Controls.Add(new LiteralControl(@"            <h2><b>" + configFormulario.subTitulo + "</b></h2>"));
+        panel.Controls.Add(new LiteralControl(@"        </div>"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-4""></div>"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3""</div>>"));
+        panel.Controls.Add(new LiteralControl(@"    </div>"));
+        panel.Controls.Add(new LiteralControl(@"</div>"));
+        //Cabeçalho - FIM
+
+        panel.Controls.Add(new LiteralControl(@"<fieldSet>"));
+        panel.Controls.Add(new LiteralControl(@"    <h4><b>Formulário de Adição</b></h4>"));
+        panel.Controls.Add(new LiteralControl(@"    <hr/>"));
+        panel.Controls.Add(MontarComponentes(ListComponentesUI, tipoExibicaoPanel.Inserir));
+        panel.Controls.Add(new LiteralControl(@"    <div class=""container-fluid mt-3"">"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""row mob-row-buttons"">"));
+        panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-left"">"));
+
+        if (!configFormulario.ocultarBotaoCancelarAdicionar)
+        {
+            Button btnCancelar = new Button();
+            btnCancelar.ID = "btnCancelarAdicionar";
+            btnCancelar.Text = "Cancelar";
+            btnCancelar.Click += configFormulario.AdicionarClick_cancelar;
+            btnCancelar.Attributes.Add("class", "botaoSecondPadrao");
+            btnCancelar.Attributes.Add("Title", "Cancelar");
+            panel.Controls.Add(btnCancelar);
+        }
+
+        panel.Controls.Add(new LiteralControl(@"            </div>"));
+        panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-end"">"));
+
+        Button btnEditar = new Button();
+        btnEditar.ID = "btnAdicionar";
+        btnEditar.Text = "Adicionar";
+        btnEditar.Click += configFormulario.AdicionarClick;
+        btnEditar.Attributes.Add("class", "botaoSuccessPadrao");
+        panel.Controls.Add(btnEditar);
+
+        panel.Controls.Add(new LiteralControl(@"            </div>"));
+        panel.Controls.Add(new LiteralControl(@"        </div>")); //Row - Fim
+        panel.Controls.Add(new LiteralControl(@"    </div>")); //Container - Fim
+        panel.Controls.Add(new LiteralControl(@"</fieldset>")); //Fieldset - Fim
+
+        return panel;
+    }
+
     public Panel MontarUIFormularioEdicao(List<CompBase> ListComponentesUI, DataRow dadosCarregados, NautaModelFormulario configFormulario)
     {
         var panel = new Panel();
@@ -286,6 +339,9 @@ public class NautaUiBuilder
             panel.Controls.Add(btnCancelar);
         }
 
+        panel.Controls.Add(new LiteralControl(@"            </div>"));
+        panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-end"">"));
+
         //Botão editar
         Button btnEditar = new Button();
         btnEditar.ID = "btnGravarEdicao";
@@ -298,7 +354,7 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"            </div>"));
         panel.Controls.Add(new LiteralControl(@"        </div>")); //Row - Fim
         panel.Controls.Add(new LiteralControl(@"    </div>")); //Container - Fim
-        panel.Controls.Add(new LiteralControl(@"</fieldset>")); //Container - Fim
+        panel.Controls.Add(new LiteralControl(@"</fieldset>")); //Fieldset - Fim
 
         return panel;
     }

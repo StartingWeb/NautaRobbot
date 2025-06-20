@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NautaRobbot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7690772fd20eb08b8f6e5593a58d9cbc36f9d2b0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3008854200d6a9f2c70dc4525d673234d6db29a9")]
 [assembly: System.Reflection.AssemblyProductAttribute("NautaRobbot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NautaRobbot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

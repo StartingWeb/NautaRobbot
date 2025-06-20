@@ -139,7 +139,7 @@ public class Nauta
             tabelaNova.Rows.Add(novaLinha);
         }
 
-        if(dicionarioRodape.Count > 0)
+        if (dicionarioRodape.Count > 0)
             tabelaNova.Rows.Add(RetornaLinhaRodapeListagem(dicionarioRodape, tabelaNova));
 
         return tabelaNova;
@@ -153,39 +153,133 @@ public class Nauta
         configFormulario = new NautaEvents(configFormulario, this).RetornaEventosFormularioValidados();
 
         if (modoPesquisar) MontarFormularioPesquisar();
-        else if (modoEditar) MontarFormularioEdicao();
+        else if (modoInserir) MontarFormularioAdicionar();
+        else if (modoEditar) MontarFormularioEditar();
         else if (modoExibir) MontarFormularioExibir();
 
-            return build;
+        return build;
     }
 
 
     //Ações de interação DataBase
-    public NautaBuild EditarDados()
+    public NautaBuild PesquisarDados()
     {
         NautaBuild debug = new NautaBuild();
-        NautaRepository repositoryEdicao = new NautaRepository();
+        NautaRepository repositoryPesquisa = new NautaRepository();
+        foreach (var componente in Componentes)
+        {
 
+            string valorCampo = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
+            bool valorMonetario = false;
+
+            if (componente.GetType() == typeof(CompTextBox))
+            {
+                CompTextBox textBox = (CompTextBox)componente;
+                valorMonetario = textBox.ValorMonetario;
+            }
+
+            repositoryPesquisa.camposSQL.Add(new CampoSQL
+            {
+                chave = componente.SQL.campoSQL,
+                valor = valorCampo,
+                valorMonetario = valorMonetario,
+                tipoComponente = componente.GetType()
+            });
+
+        }
+
+        DataTable dadosPesquisa = repositoryPesquisa.RetornaDadosPesquisa(nautaSQL);
+        DataTable dadosPesquisaTratado = ReconstruirColunasDataTableListagem(dadosPesquisa);
+        debug = MontarListagemResultadoPesquisa(dadosPesquisaTratado);
+        return debug;
+    }
+
+    public NautaBuild AdicionarDados()
+    {
+        NautaBuild debug = new NautaBuild();
+        NautaRepository repositoryAdicao = new NautaRepository();
         string mensagemErroObrigatorio = "";
 
         try
         {
             foreach (var componente in Componentes)
             {
-                CompBase componenteBase = (CompBase)componente;
-                string valorCampo = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
+                string valorComponente = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
 
-                if (!valorCampo.Equals(""))
+                if (componente.SQL.acaoSQLInsert)
                 {
-                    repositoryEdicao.camposSQL.Add(new NautaRepository.CampoSQL
+                    if (valorComponente.Equals("") && !componente.SQL.valorPadrao.Equals(""))
+                        valorComponente = componente.SQL.valorPadrao;
+
+                    if (!valorComponente.Equals(""))
                     {
-                        chave = componenteBase.SQL.campoSQL,
-                        valor = valorCampo
-                    });
+                        repositoryAdicao.camposSQL.Add(new CampoSQL
+                        {
+                            chave = componente.SQL.campoSQL,
+                            valor = valorComponente,
+                            ehTexto = componente.SQL.valorPadrao.Equals("") //Se tiver valor padrão é comando SQL
+                        });
+                    }
+                    else if (valorComponente.Equals("") && componente.Config.campoObrigatorio)
+                    {
+                        mensagemErroObrigatorio += "<b>" + componente.HTML.label + "</b> <br/>";
+                    }
                 }
-                else if (valorCampo.Equals("") && componenteBase.Config.campoObrigatorio)
+            }
+
+            if (!mensagemErroObrigatorio.Equals(""))
+            {
+                mensagemErroObrigatorio = "Os seguintes campos são obrigatórios serem preenchidos: <br/>" + mensagemErroObrigatorio;
+                debug.Sucesso = false;
+                debug.Mensagem = mensagemErroObrigatorio;
+            }
+            else if (repositoryAdicao.camposSQL.Count > 0)
+                debug = repositoryAdicao.AdicionarDados(nautaSQL);
+            else
+            {
+                debug.Sucesso = false;
+                debug.Mensagem = "Nenhum valor atualizado, nenhum componente listado!";
+            }
+        }
+        catch (Exception ex)
+        {
+            debug.Sucesso = false;
+            debug.RetornoDesenvolvimento = "Erro: " + ex.ToString();
+            throw new Exception(debug.RetornoDesenvolvimento);
+        }
+
+        return debug;
+    }
+
+    public NautaBuild EditarDados()
+    {
+        NautaBuild debug = new NautaBuild();
+        NautaRepository repositoryEdicao = new NautaRepository();
+        string mensagemErroObrigatorio = "";
+
+        try
+        {
+            foreach (var componente in Componentes)
+            {
+                string valorComponente = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
+
+                if (valorComponente.Equals("") && !componente.SQL.valorPadrao.Equals(""))
+                    valorComponente = componente.SQL.valorPadrao;
+
+                if (componente.SQL.acaoSQLUpdate)
                 {
-                    mensagemErroObrigatorio += "<b>" + componenteBase.HTML.label + "</b> <br/>";
+                    if (!valorComponente.Equals(""))
+                    {
+                        repositoryEdicao.camposSQL.Add(new CampoSQL
+                        {
+                            chave = componente.SQL.campoSQL,
+                            valor = valorComponente
+                        });
+                    }
+                    else if (valorComponente.Equals("") && componente.Config.campoObrigatorio)
+                    {
+                        mensagemErroObrigatorio += "<b>" + componente.HTML.label + "</b> <br/>";
+                    }
                 }
             }
 
@@ -212,34 +306,7 @@ public class Nauta
         return debug;
     }
 
-    public NautaBuild PesquisarDados()
-    {
-        NautaBuild debug = new NautaBuild();
-        NautaRepository repositoryPesquisa = new NautaRepository();
-        foreach (var componente in Componentes)
-        {
-            string valorCampo = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
-            bool valorMonetario = false;
 
-            if (componente.GetType() == typeof(CompTextBox))
-            {
-                CompTextBox textBox = (CompTextBox)componente;
-                valorMonetario = textBox.ValorMonetario;
-            }
-
-            repositoryPesquisa.camposSQL.Add(new CampoSQL
-            {
-                chave = componente.SQL.campoSQL,
-                valor = valorCampo,
-                valorMonetario = valorMonetario
-            });
-        }
-
-        DataTable dadosPesquisa = repositoryPesquisa.RetornaDadosPesquisa(nautaSQL);
-        DataTable dadosPesquisaTratado = ReconstruirColunasDataTableListagem(dadosPesquisa);
-        debug = MontarListagemResultadoPesquisa(dadosPesquisaTratado);
-        return debug;
-    }
 
 
     //Private - Interno
@@ -290,7 +357,32 @@ public class Nauta
         return debug;
     }
 
-    private NautaBuild MontarFormularioEdicao()
+    private NautaBuild MontarFormularioAdicionar()
+    {
+        NautaBuild debug = new NautaBuild();
+        var uiBuilder = new NautaUiBuilder();
+        uiBuilder.isPostBack = _nautaModel.isPostBack;
+
+        try
+        {
+            var painel = uiBuilder.MontarUIFormularioAdicionar(Componentes, configFormulario);
+            _nautaModel.panelInserir.Controls.Clear();
+            _nautaModel.panelInserir.Controls.Add(painel);
+
+            debug.Sucesso = true;
+        }
+        catch (Exception ex)
+        {
+            debug.Sucesso = false;
+            debug.Mensagem = "Ops, houve um erro ao criar esse formulario, entre em contato " +
+                "com a equipe de desenvolvimento";
+            debug.RetornoDesenvolvimento = ex.ToString();
+        }
+
+        return debug;
+    }
+
+    private NautaBuild MontarFormularioEditar()
     {
         NautaBuild build = new NautaBuild();
         DataRow dataEdicao = _repository.RetornaDadosFormularioEdicao(nautaSQL);
