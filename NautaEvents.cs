@@ -22,47 +22,64 @@ public class NautaEvents
 
     void ValidarEventos(NautaModelFormulario eventosFormulario)
     {
+        //Pesquisar
+        if (_eventosFormulario.PesquisarClick == null)
+            _eventosFormulario.PesquisarClick = eventPesquisarClick;
+        
         if (_eventosFormulario.PesquisarClick_cancelar == null)
             _eventosFormulario.PesquisarClick_cancelar = eventPesquisarCancelarClick;
 
+        //Editar
         if (_eventosFormulario.EditarClick == null)
             _eventosFormulario.EditarClick = eventEdicaoClick;
 
-        if (_eventosFormulario.AdicionarClick_cancelar == null)
-            _eventosFormulario.AdicionarClick_cancelar = eventAdicionaCancelarClick;
+        if (_eventosFormulario.EditarClick_cancelar == null)
+            _eventosFormulario.EditarClick_cancelar = eventEdicaoCancelarClick;
+
+        //Exibir
+        if (_eventosFormulario.ExibirClick_cancelar == null)
+            _eventosFormulario.ExibirClick_cancelar = eventExibirCancelarClick;
     }
 
+
+    //Pesquisar
+    public void eventPesquisarClick(object sender, EventArgs e)
+    {
+        _nautaInstance.debugEventosInternos = _nautaInstance.PesquisarDados();
+        HttpContext.Current.Session["NautaDebugInterno"] = _nautaInstance.debugEventosInternos;
+    }
 
     public void eventPesquisarCancelarClick(object sender, EventArgs e)
     {
         _nautaHelper.ReloadPage();
     }
 
-    public void eventPesquisarClick(object sender, EventArgs e)
-    {
+    
 
-    }
-
-    public void eventEdicaoCancelarClick(object sender, EventArgs e)
-    {
-        string url = "" + HttpContext.Current.Request.Url.AbsolutePath;
-        HttpContext.Current.Response.Redirect(url);
-    }
-
+    //Editar
     public void eventEdicaoClick(object sender, EventArgs e)
     {
         _nautaInstance.debugEventosInternos = _nautaInstance.EditarDados();
         HttpContext.Current.Session["NautaDebugInterno"] = _nautaInstance.debugEventosInternos;
-        _nautaHelper.ReloadPage();
+        _nautaHelper.RedirectFormularioInicial();
     }
 
-    public void eventAdicionarClick(object sender, EventArgs e)
+    public void eventEdicaoCancelarClick(object sender, EventArgs e)
     {
+        _nautaHelper.RedirectFormularioInicial();
     }
 
-    public void eventAdicionaCancelarClick(object sender, EventArgs e)
+
+
+    //Exibir
+    public void eventExibirCancelarClick(object sender, EventArgs e)
     {
+        _nautaHelper.RedirectFormularioInicial();
     }
+
+
+
+
 
 
     public NautaModelFormulario RetornaEventosFormularioValidados()

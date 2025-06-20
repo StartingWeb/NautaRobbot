@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using NautaRobbot;
+using NautaRobbot.Helpers;
+using static NautaRepository;
 
 
 public class Nauta
@@ -18,6 +21,7 @@ public class Nauta
 
     public List<CompBase> Componentes = new List<CompBase>();
     public NautaModelSQL nautaSQL;
+    public NautaModelFormulario configFormulario;
 
     bool modoInserir = false;
     bool modoEditar = false;
@@ -40,8 +44,8 @@ public class Nauta
     {
         debugEventosInternos = (NautaBuild)HttpContext.Current.Session["NautaDebugInterno"];
         HttpContext.Current.Session.Remove("NautaDebugInterno");  // limpa para não repetir mensagem
-        
-        if (debugEventosInternos == null) 
+
+        if (debugEventosInternos == null)
             debugEventosInternos = new NautaBuild();
     }
     void DefinirPanelExibicao(string modo)
@@ -72,19 +76,91 @@ public class Nauta
         _nautaModel.panelExibir.Visible = modoExibir;
     }
 
+    DataRow RetornaLinhaRodapeListagem(Dictionary<string, decimal> dicionarioRodape, DataTable novaTabela)
+    {
+        DataRow linhaRodape = novaTabela.NewRow();
+        linhaRodape["Contagem"] = "Total:";
+        linhaRodape["Actions"] = "";
+
+        foreach (DataColumn coluna in novaTabela.Columns)
+        {
+            object valorRodape = DBNull.Value;
+            if (dicionarioRodape.ContainsKey(coluna.ColumnName))
+                valorRodape = dicionarioRodape[coluna.ColumnName];
+
+            linhaRodape[coluna.ColumnName] = valorRodape;
+        }
+
+        return linhaRodape;
+    }
+
+    DataTable ReconstruirColunasDataTableListagem(DataTable dadosListagem)
+    {
+        DataTable tabelaNova = new DataTable();
+        int numeroLinha = 0;
+
+        tabelaNova.Columns.Add("Contagem", typeof(string));
+        tabelaNova.Columns.Add("Actions", typeof(string));
+
+        foreach (DataColumn coluna in dadosListagem.Columns)
+        {
+            tabelaNova.Columns.Add(coluna.ColumnName, coluna.DataType);
+        }
+
+        Dictionary<string, decimal> dicionarioRodape = new Dictionary<string, decimal>();
+
+        foreach (DataRow linha in dadosListagem.Rows)
+        {
+            numeroLinha++;
+            DataRow novaLinha = tabelaNova.NewRow();
+
+            int idRegistro = Fac.convertInt(linha[nautaSQL.primaryKey].ToString());
+            string botoesDeAcao = _helper.RetornaBotoesListagemPadrao(idRegistro,
+                configFormulario.ocultarBotaoEditarListagem,
+                configFormulario.ocultarBotaoExibirListagem);
+
+            novaLinha["Contagem"] = numeroLinha;
+            novaLinha["Actions"] = botoesDeAcao;
+
+            foreach (DataColumn coluna in dadosListagem.Columns)
+            {
+                novaLinha[coluna.ColumnName] = linha[coluna.ColumnName]; //Colocando todas as colunas na linha nova.
+
+                // Somar o valor se for uma coluna numérica
+                if (decimal.TryParse(linha[coluna.ColumnName].ToString(), out decimal valorCelula))
+                {
+                    if (dicionarioRodape.ContainsKey(coluna.ColumnName))
+                        valorCelula += dicionarioRodape[coluna.ColumnName];
+
+                    dicionarioRodape[coluna.ColumnName] = valorCelula;
+                }
+            }
+
+            tabelaNova.Rows.Add(novaLinha);
+        }
+
+        if(dicionarioRodape.Count > 0)
+            tabelaNova.Rows.Add(RetornaLinhaRodapeListagem(dicionarioRodape, tabelaNova));
+
+        return tabelaNova;
+    }
+
 
     //Public - acessiveis
-    public NautaBuild MontarFormularios(NautaModelFormulario configFormulario)
+    public NautaBuild MontarFormularios()
     {
         NautaBuild build = new NautaBuild();
         configFormulario = new NautaEvents(configFormulario, this).RetornaEventosFormularioValidados();
 
-        if (modoPesquisar) MontarFormularioPesquisar(configFormulario);
-        else if (modoEditar) MontarFormularioEdicao(configFormulario);
+        if (modoPesquisar) MontarFormularioPesquisar();
+        else if (modoEditar) MontarFormularioEdicao();
+        else if (modoExibir) MontarFormularioExibir();
 
-        return build;
+            return build;
     }
 
+
+    //Ações de interação DataBase
     public NautaBuild EditarDados()
     {
         NautaBuild debug = new NautaBuild();
@@ -99,14 +175,9 @@ public class Nauta
                 CompBase componenteBase = (CompBase)componente;
                 string valorCampo = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
 
-                if (componente.GetType() == typeof(CompTextBox))
-                {
-                    CompTextBox textBox = (CompTextBox)componente;
-                }
-
                 if (!valorCampo.Equals(""))
                 {
-                    repositoryEdicao.camposTransactSQLs.Add(new NautaRepository.CamposTransactSQL
+                    repositoryEdicao.camposSQL.Add(new NautaRepository.CampoSQL
                     {
                         chave = componenteBase.SQL.campoSQL,
                         valor = valorCampo
@@ -124,7 +195,7 @@ public class Nauta
                 debug.Sucesso = false;
                 debug.Mensagem = mensagemErroObrigatorio;
             }
-            else if (repositoryEdicao.camposTransactSQLs.Count > 0)
+            else if (repositoryEdicao.camposSQL.Count > 0)
                 debug = repositoryEdicao.EditarDados(nautaSQL);
             else
             {
@@ -141,9 +212,38 @@ public class Nauta
         return debug;
     }
 
+    public NautaBuild PesquisarDados()
+    {
+        NautaBuild debug = new NautaBuild();
+        NautaRepository repositoryPesquisa = new NautaRepository();
+        foreach (var componente in Componentes)
+        {
+            string valorCampo = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
+            bool valorMonetario = false;
+
+            if (componente.GetType() == typeof(CompTextBox))
+            {
+                CompTextBox textBox = (CompTextBox)componente;
+                valorMonetario = textBox.ValorMonetario;
+            }
+
+            repositoryPesquisa.camposSQL.Add(new CampoSQL
+            {
+                chave = componente.SQL.campoSQL,
+                valor = valorCampo,
+                valorMonetario = valorMonetario
+            });
+        }
+
+        DataTable dadosPesquisa = repositoryPesquisa.RetornaDadosPesquisa(nautaSQL);
+        DataTable dadosPesquisaTratado = ReconstruirColunasDataTableListagem(dadosPesquisa);
+        debug = MontarListagemResultadoPesquisa(dadosPesquisaTratado);
+        return debug;
+    }
+
 
     //Private - Interno
-    private NautaBuild MontarFormularioPesquisar(NautaModelFormulario configFormulario)
+    private NautaBuild MontarFormularioPesquisar()
     {
         NautaBuild debug = new NautaBuild();
         var uiBuilder = new NautaUiBuilder();
@@ -157,7 +257,7 @@ public class Nauta
 
             debug.Sucesso = true;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             debug.Sucesso = false;
             debug.Mensagem = "Ops, houve um erro ao criar esse formulario, entre em contato " +
@@ -167,7 +267,30 @@ public class Nauta
         return debug;
     }
 
-    private NautaBuild MontarFormularioEdicao(NautaModelFormulario configFormulario)
+    private NautaBuild MontarListagemResultadoPesquisa(DataTable dadosPesquisa)
+    {
+        NautaBuild debug = new NautaBuild();
+        var uiBuilder = new NautaUiBuilder();
+        uiBuilder.isPostBack = _nautaModel.isPostBack;
+        try
+        {
+            var painel = uiBuilder.MontarUIListagem(Componentes, dadosPesquisa);
+            _nautaModel.panelListagem.Visible = true;
+            _nautaModel.panelListagem.Controls.Clear();
+            _nautaModel.panelListagem.Controls.Add(painel);
+            debug.Sucesso = true;
+        }
+        catch (Exception ex)
+        {
+            debug.Sucesso = false;
+            debug.Mensagem = "Ops, houve um erro ao criar essa listagem, entre em contato " +
+                "com a equipe de desenvolvimento";
+            debug.RetornoDesenvolvimento = ex.ToString();
+        }
+        return debug;
+    }
+
+    private NautaBuild MontarFormularioEdicao()
     {
         NautaBuild build = new NautaBuild();
         DataRow dataEdicao = _repository.RetornaDadosFormularioEdicao(nautaSQL);
@@ -193,6 +316,30 @@ public class Nauta
         return build;
     }
 
-    
+    private NautaBuild MontarFormularioExibir()
+    {
+        NautaBuild debug = new NautaBuild();
+        DataRow dataExibicao = _repository.RetornaDadosFormularioExibicao(nautaSQL);
+
+        var uiBuilder = new NautaUiBuilder();
+        uiBuilder.isPostBack = _nautaModel.isPostBack;
+        try
+        {
+            var painel = uiBuilder.MontarUIFormularioExibir(Componentes, configFormulario, dataExibicao);
+            _nautaModel.panelExibir.Controls.Clear();
+            _nautaModel.panelExibir.Controls.Add(painel);
+
+            debug.Sucesso = true;
+        }
+        catch (Exception ex)
+        {
+            debug.Sucesso = false;
+            debug.Mensagem = "Ops, houve um erro ao criar esse formulario, entre em contato " +
+                "com a equipe de desenvolvimento";
+            debug.RetornoDesenvolvimento = ex.ToString();
+        }
+        return debug;
+    }
+
 }
 

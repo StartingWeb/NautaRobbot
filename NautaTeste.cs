@@ -43,7 +43,7 @@ class NautaTeste
         NautaModelFormulario configFormulario = ConfigurarFormulariosPage();
         nautaRobbot.nautaSQL = ConfigurarSQLPage();
         MontarComponentesUI(nautaRobbot);
-        NautaBuild buildPage = nautaRobbot.MontarFormularios(configFormulario);
+        NautaBuild buildPage = nautaRobbot.MontarFormularios();
         ExibirRetornoNauta(buildPage, nautaRobbot.debugEventosInternos);
     }
 

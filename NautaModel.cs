@@ -34,6 +34,9 @@ public class NautaModelFormulario
     public bool ocultarBotaoCancelarExibir { get; set; } = false;
     public bool ocultarBotaoCancelarAdicionar { get; set; } = false;
 
+    public bool ocultarBotaoEditarListagem { get; set; } = false;
+    public bool ocultarBotaoExibirListagem { get; set; } = false;
+
     //Eventos
     public EventHandler PesquisarClick;
     public EventHandler PesquisarClick_cancelar;

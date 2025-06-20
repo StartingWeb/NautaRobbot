@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Xml.Linq;
 using NautaRobbot;
 
 public class NautaUiBuilder
@@ -50,7 +52,7 @@ public class NautaUiBuilder
         DataRow dadosCarregados = null)
     {
         List<CompBase> componentesExistentes = new List<CompBase>();
-        
+
         Panel panelContainer = new Panel();
         panelContainer.Attributes.Add("class", "container-fluid");
 
@@ -72,10 +74,10 @@ public class NautaUiBuilder
                 {
                     CompTextBox textBox = (CompTextBox)componenteBase;
 
-                    if (modoExibicao == tipoExibicaoPanel.Editar)
+                    if (modoExibicao == tipoExibicaoPanel.Editar || modoExibicao == tipoExibicaoPanel.Exibir)
                     {
                         if (dadosCarregados.Table.Columns.Contains(textBox.SQL.campoSQL))//Aqui ele mantem o filtro de pesquisa quando clica em pesquisar
-                            valorComponente =  dadosCarregados[textBox.SQL.campoSQL].ToString() ?? "";
+                            valorComponente = dadosCarregados[textBox.SQL.campoSQL].ToString() ?? "";
                     }
                     else if (modoExibicao == tipoExibicaoPanel.Pesquisar && isPostBack)
                     {
@@ -83,7 +85,9 @@ public class NautaUiBuilder
                     }
 
                     textBox.Valor = valorComponente;
-                    componenteCriado = textBox.MontarComponente(textBox);
+                    componenteCriado = modoExibicao == tipoExibicaoPanel.Exibir ?
+                        textBox.MontarComponenteExibicao(textBox) :
+                        textBox.MontarComponente(textBox);
                 }
 
                 panelRow.Controls.Add(componenteCriado);
@@ -94,6 +98,77 @@ public class NautaUiBuilder
         panelContainer.Controls.Add(panelRow);
         return panelContainer;
     }
+
+
+
+    private GridView MontarDataGridViewListagem(List<CompBase> ListComponentesUI, DataTable dados)
+    {
+        GridView gridView = new GridView
+        {
+            ID = "gridViewPesquisa",
+            CssClass = "gridViewPesquisaPadrao mob-grid-view-padrao",
+            PageSize = 10,
+            AutoGenerateColumns = false // Prevenir geração automática de colunas
+        };
+
+        //Adicionar coluna de contagem
+        gridView.Columns.Add(new BoundField
+        {
+            DataField = "Contagem",
+            HeaderText = "#",
+            HtmlEncode = false,
+        });
+
+        // Adicionar coluna de ações e botão de ação
+        gridView.Columns.Add(new BoundField
+        {
+            DataField = "Actions",
+            HeaderText = "Ações",
+            HtmlEncode = false,
+        });
+
+        foreach (CompBase componente in ListComponentesUI)
+        {
+            if (componente.Modulos.Listagem)
+            {
+                string dataField = "";
+
+                dataField = componente.SQL.campoSQL;
+
+                gridView.Columns.Add(new BoundField
+                {
+                    DataField = dataField,
+                    HeaderText = componente.HTML.label,
+                    HtmlEncode = false,
+                });
+            }
+        }
+
+        gridView.DataSource = dados;
+        gridView.DataBind();
+        gridView.PageIndex = 0;
+
+        // Adicionar atributos data-label às células da tabela
+        foreach (GridViewRow row in gridView.Rows)
+        {
+            if (row.RowType == DataControlRowType.DataRow)
+            {
+                for (int i = 0; i < row.Cells.Count; i++)
+                {
+                    string headerText = gridView.Columns[i].HeaderText;
+                    row.Cells[i].Attributes["data-label"] = headerText;
+
+                    string resultText = gridView.Columns[i].ToString();
+                    row.Cells[i].Text = row.Cells[i].Text.Replace(" 00:00:00", "");
+                }
+            }
+        }
+
+        return gridView;
+    }
+
+
+    //Métodos Publicos
 
     public Panel MontarUIFormularioPesquisa(List<CompBase> ListComponentesUI, NautaModelFormulario configFormulario)
     {
@@ -108,7 +183,7 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-4""></div>"));
         panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3"">"));
 
-        if(configFormulario.ocultarBotaoAdicionar)
+        if (configFormulario.ocultarBotaoAdicionar)
         {
             panel.Controls.Add(new LiteralControl(@"        <button class=""botaoPrimaryPadrao"" 
                                                             onclick=""window.location.href='?modo=i'; return false;"">
@@ -129,7 +204,7 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"    <div class=""container-fluid mt-3"">"));
         panel.Controls.Add(new LiteralControl(@"        <div class=""row mob-row-buttons"">"));
         panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-left"">"));
-        
+
         //Button cancelar
         Button btnCancelar = new Button();
         btnCancelar.ID = "btnCancelarPesquisa";
@@ -140,7 +215,7 @@ public class NautaUiBuilder
 
         panel.Controls.Add(new LiteralControl(@"            </div>"));
         panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-left"">"));
-        
+
         Button btnPesquisar = new Button();
         btnPesquisar.ID = "btnPesquisar";
         btnPesquisar.Text = "Pesquisar";
@@ -151,6 +226,23 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"        </div>"));//Row- Fim
         panel.Controls.Add(new LiteralControl(@"    </div>"));//Container- Fim
         panel.Controls.Add(new LiteralControl(@"</fieldset>"));
+        return panel;
+    }
+
+    public Panel MontarUIListagem(List<CompBase> ListComponentesUI, DataTable dadosPesquisados)
+    {
+        var panel = new Panel();
+
+        panel.Controls.Add(new LiteralControl(@"<fieldSet class=""field-listagem-padrao mob-field-listagem"">"));
+        panel.Controls.Add(new LiteralControl(@"    <h4><b>Resultados</b></h4>"));
+        panel.Controls.Add(new LiteralControl(@"    <hr/>"));
+
+        if (dadosPesquisados.Rows.Count > 0)
+            panel.Controls.Add(MontarDataGridViewListagem(ListComponentesUI, dadosPesquisados));
+        else
+            panel.Controls.Add(new LiteralControl(@"<span class='sp_sem_resultado'>Nenhum Resultado encontrado!</span>"));
+
+        panel.Controls.Add(new LiteralControl(@"    </fieldset>"));
         return panel;
     }
 
@@ -211,6 +303,48 @@ public class NautaUiBuilder
         return panel;
     }
 
-  
+    public Panel MontarUIFormularioExibir(List<CompBase> ListComponentesUI, NautaModelFormulario configFormulario, DataRow dadosCarregados)
+    {
+        var panel = new Panel();
+        //Cabeçalho - INI
+        panel.Controls.Add(new LiteralControl(@"<div id=""div_container_cabecalho"" class=""container-fluid container-cabecalho-padrao"">"));
+        panel.Controls.Add(new LiteralControl(@"    <div class=""row"">"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-5"">"));
+        panel.Controls.Add(new LiteralControl(@"            <span>" + configFormulario.tituloPrincipal + "</span>"));
+        panel.Controls.Add(new LiteralControl(@"            <h2><b>" + configFormulario.subTitulo + "</b></h2>"));
+        panel.Controls.Add(new LiteralControl(@"        </div>"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-4""></div>"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3""</div>>"));
+        panel.Controls.Add(new LiteralControl(@"    </div>"));
+        panel.Controls.Add(new LiteralControl(@"</div>"));
+        //Cabeçalho - FIM
+
+        panel.Controls.Add(new LiteralControl(@"<fieldSet>"));
+        panel.Controls.Add(new LiteralControl(@"    <h4><b>Formulário de Exibição</b></h4>"));
+        panel.Controls.Add(new LiteralControl(@"    <hr/>"));
+        panel.Controls.Add(MontarComponentes(ListComponentesUI, tipoExibicaoPanel.Exibir, dadosCarregados));
+        panel.Controls.Add(new LiteralControl(@"    <div class=""container-fluid mt-3"">"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""row mob-row-buttons"">"));
+        panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-left"">"));
+        
+        if (!configFormulario.ocultarBotaoCancelarExibir)
+        {
+            Button btnCancelar = new Button();
+            btnCancelar.ID = "btnCancelarExibir";
+            btnCancelar.Text = "Cancelar";
+            btnCancelar.Click += configFormulario.EditarClick_cancelar;
+            btnCancelar.Attributes.Add("class", "botaoSecondPadrao");
+            btnCancelar.Attributes.Add("Title", "Cancelar");
+            panel.Controls.Add(btnCancelar);
+        }
+
+        panel.Controls.Add(new LiteralControl(@"            </div>"));
+        panel.Controls.Add(new LiteralControl(@"        </div>")); //Row - Fim
+        panel.Controls.Add(new LiteralControl(@"    </div>")); //Container - Fim
+        panel.Controls.Add(new LiteralControl(@"</fieldset>")); //Container - Fim
+
+        return panel;
+    }
+
 
 }

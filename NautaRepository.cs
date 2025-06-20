@@ -4,15 +4,17 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI;
 public class NautaRepository
 {
     public readonly SQL _conexao;
-    public List<CamposTransactSQL> camposTransactSQLs = new List<CamposTransactSQL>();
+    public List<CampoSQL> camposSQL = new List<CampoSQL>();
 
-    public class CamposTransactSQL
+    public class CampoSQL
     {
         public string chave;
         public string valor;
+        public bool valorMonetario = false;
     }
 
     public NautaRepository()
@@ -20,17 +22,45 @@ public class NautaRepository
         _conexao = new SQL();
     }
 
+
+    public DataTable RetornaDadosPesquisa(NautaModelSQL nautaSQL)
+    {
+        StringBuilder camposPesquisa = new StringBuilder();
+        StringBuilder wherePesquisa = new StringBuilder();
+
+        foreach (CampoSQL campo in camposSQL)
+        {
+            if (!campo.valor.Equals(""))
+            {
+                _conexao.prm("@" + campo.chave, campo.valor);
+                wherePesquisa.AppendLine(" AND " + campo.chave + " like '%'+ @" + campo.chave + "+'%'");
+            }
+
+            if (campo.valorMonetario)
+                campo.chave = " ,FORMAT(" + campo.chave + ", 'C', 'pt-BR') as  " + campo.chave + " ";
+
+            camposPesquisa.AppendLine(" ," + campo.chave);
+        }
+
+        return _conexao.DataTable(@"SELECT
+        " + nautaSQL.primaryKey + camposPesquisa.ToString()
+        + @" FROM " +
+        nautaSQL.locationSelect
+        + @" WHERE 1 = 1" + wherePesquisa.ToString());
+    }
+
+
     public NautaBuild EditarDados(NautaModelSQL nautaSQL)
     {
         NautaBuild debug = new NautaBuild();
-        if (this.camposTransactSQLs.Count == 0)
+        if (this.camposSQL.Count == 0)
         {
             debug.Sucesso = false;
             debug.Mensagem = "Nenhum valor atualizado, nenhum componente listado!";
         }
         else
         {
-            if(nautaSQL.idClient.ToString().Equals(""))
+            if (nautaSQL.idClient.ToString().Equals(""))
             {
                 debug.Sucesso = false;
                 debug.Mensagem = "Valor de identificação do registro não encontrado!";
@@ -38,7 +68,7 @@ public class NautaRepository
             else
             {
                 TransactSQL tUpdate = new TransactSQL();
-                foreach (CamposTransactSQL campo in this.camposTransactSQLs)
+                foreach (CampoSQL campo in this.camposSQL)
                 {
                     tUpdate.add(campo.chave, campo.valor);
                 }
@@ -52,7 +82,7 @@ public class NautaRepository
                     debug.Mensagem = "Dados atualizados com sucesso!";
                     tUpdate.exec();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     debug.Sucesso = false;
                     debug.RetornoDesenvolvimento = ex.ToString();
@@ -63,21 +93,36 @@ public class NautaRepository
         return debug;
     }
 
-
-
-    public DataRow RetornaDadosFormularioEdicao(NautaModelSQL sql)
+    public DataRow RetornaDadosFormularioEdicao(NautaModelSQL nautaSQL)
     {
-        sql.where = sql.where.Equals("") ? "1 = 1" : sql.where;
+        nautaSQL.where = nautaSQL.where.Equals("") ? "1 = 1" : nautaSQL.where;
 
         string sqlQuery = @"
         SELECT
-        " + sql.selectorFrom + @"
-        FROM " + sql.table + @"
-        WHERE " + sql.primaryKey + @" = @" + sql.primaryKey + @"
-        AND " + sql.where + @"
-        Order By " + sql.orderBy;
+        " + nautaSQL.selectorFrom + @"
+        FROM " + nautaSQL.table + @"
+        WHERE " + nautaSQL.primaryKey + @" = @" + nautaSQL.primaryKey + @"
+        AND " + nautaSQL.where + @"
+        Order By " + nautaSQL.orderBy;
 
-        _conexao.prm("@" + sql.primaryKey, sql.idClient.ToString());
+        _conexao.prm("@" + nautaSQL.primaryKey, nautaSQL.idClient.ToString());
+        return _conexao.DataRow(sqlQuery);
+    }
+
+
+    public DataRow RetornaDadosFormularioExibicao(NautaModelSQL nautaSQL)
+    {
+        nautaSQL.where = nautaSQL.where.Equals("") ? "1 = 1" : nautaSQL.where;
+
+        string sqlQuery = @"
+        SELECT
+        " + nautaSQL.selectorFrom + @"
+        FROM " + nautaSQL.table + @"
+        WHERE " + nautaSQL.primaryKey + @" = @" + nautaSQL.primaryKey + @"
+        AND " + nautaSQL.where + @"
+        Order By " + nautaSQL.orderBy;
+
+        _conexao.prm("@" + nautaSQL.primaryKey, nautaSQL.idClient.ToString());
         return _conexao.DataRow(sqlQuery);
     }
 

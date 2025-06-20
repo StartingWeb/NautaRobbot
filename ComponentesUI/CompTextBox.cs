@@ -22,7 +22,7 @@ public class CompTextBox : CompBase
     {
         TextBox txt = new TextBox();
         txt.ID = componente.SQL.campoSQL;
-        txt.Text = componente.ValorMonetario ? 
+        txt.Text = componente.ValorMonetario ?
             Fac.convertMonetary(Fac.convertDouble(componente.Valor)) :
             componente.Valor;
 
@@ -43,21 +43,40 @@ public class CompTextBox : CompBase
     {
         var panel = new Panel();
 
-        componente.CssClass = !componente.CssClass.Equals("") ? 
+        componente.CssClass = !componente.CssClass.Equals("") ?
             "campo-padrao " + componente.CssClass : "campo-padrao";
 
         panel.Attributes.Add("class", "separator_" + componente.SQL.campoSQL + " mb-3");
 
         //Label
-        panel.Controls.Add(new LiteralControl(@"<div class=""titulo-padrao"">" 
-        + componente.HTML.label + 
-        (componente.Config.campoObrigatorio && (componente.Modulos.Inserir || componente.Modulos.Editar) ? "*" : "") 
-        + 
+        panel.Controls.Add(new LiteralControl(@"<div class=""titulo-padrao"">"
+        + componente.HTML.label +
+        (componente.Config.campoObrigatorio && (componente.Modulos.Inserir || componente.Modulos.Editar) ? "*" : "")
+        +
         "</div>"));
 
         //Componente
         panel.Controls.Add(RetornaComponente(componente));
         return panel;
     }
+
+    public Panel MontarComponenteExibicao(CompTextBox componente)
+    {
+        var panel = new Panel();
+        componente.CssClass = !componente.CssClass.Equals("") ?
+           "campo-padrao " + componente.CssClass : "campo-padrao";
+
+        panel.Attributes.Add("class", "separator_" + componente.SQL.campoSQL + " mb-3");
+
+        //Label
+        panel.Controls.Add(new LiteralControl(@"<b><span id=""campo_exibir_title_" + componente.SQL.campoSQL + @""" class=""exibir_padrao_title"">"));
+        panel.Controls.Add(new LiteralControl(componente.HTML.label));
+        panel.Controls.Add(new LiteralControl(@":</span></b>"));
+        panel.Controls.Add(new LiteralControl(@"<span id=""campo_exibir_value_" + componente.SQL.campoSQL + @""" class=""exibir_padrao_value"">"));
+        panel.Controls.Add(new LiteralControl(componente.Valor));
+        panel.Controls.Add(new LiteralControl(@"</span>"));
+        return panel;
+    }
+
 }
 
