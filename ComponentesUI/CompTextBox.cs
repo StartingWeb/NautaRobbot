@@ -39,7 +39,7 @@ public class CompTextBox : CompBase
     }
 
 
-    public Panel MontarComponente(CompTextBox componente)
+    public Panel MontarComponente(CompTextBox componente, bool exibirTagObrigatoria = false)
     {
         var panel = new Panel();
 
@@ -51,7 +51,7 @@ public class CompTextBox : CompBase
         //Label
         panel.Controls.Add(new LiteralControl(@"<div class=""titulo-padrao"">"
         + componente.HTML.label +
-        (componente.Config.campoObrigatorio && (componente.Modulos.Inserir || componente.Modulos.Editar) ? "*" : "")
+        (componente.Config.campoObrigatorio && exibirTagObrigatoria ? "*" : "")
         +
         "</div>"));
 

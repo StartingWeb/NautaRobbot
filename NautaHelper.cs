@@ -24,6 +24,11 @@ public class NautaHelper
                 TextBox textBox = (TextBox)panel.FindControl(componenteBase.SQL.campoSQL);
                 if (textBox != null) valorComponente = textBox.Text;
             }
+            else if (componente.GetType() == typeof(CompDropdowlist))
+            {
+                DropDownList dropDownList = (DropDownList)panel.FindControl(componenteBase.SQL.campoSQL);
+                if (dropDownList != null) valorComponente = dropDownList.SelectedValue;
+            }
         }
         return valorComponente;
     }

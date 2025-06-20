@@ -26,6 +26,11 @@ public class NautaUiBuilder
         Exibir
     }
 
+    bool ValidarDuplicidadeComponentes(List<CompBase> componentesExistentes, CompBase componente)
+    {
+        return componentesExistentes.Any(c => c == componente);
+    }
+
     bool ValidarModoExibicaoComponente(CompBase componenteBase, tipoExibicaoPanel modoExibicao)
     {
         bool validacao = false;
@@ -62,32 +67,49 @@ public class NautaUiBuilder
 
         foreach (var componenteBase in ListComponentesUI)
         {
-            if (ValidarModoExibicaoComponente(componenteBase, modoExibicao))
+            if (ValidarModoExibicaoComponente(componenteBase, modoExibicao)
+                && !ValidarDuplicidadeComponentes(componentesExistentes, componenteBase))
             {
-                string valorComponente = "";
                 panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-3"">"));
-                Panel componenteCriado = new Panel();
-
                 componentesExistentes.Add(componenteBase); //Validação para não duplicar campos na tela, mesmo que venha da declarativa
+
+                Panel componenteCriado = new Panel();
+                string valorComponente = "";
+                bool exibirTagObrigatoria = tipoExibicaoPanel.Inserir == modoExibicao || tipoExibicaoPanel.Editar == modoExibicao ? true : false;
+
+
+                if (modoExibicao == tipoExibicaoPanel.Editar || modoExibicao == tipoExibicaoPanel.Exibir)
+                {
+                    if (dadosCarregados.Table.Columns.Contains(componenteBase.SQL.campoSQL))
+                        valorComponente = dadosCarregados[componenteBase.SQL.campoSQL].ToString() ?? "";
+                }
+
 
                 if (componenteBase.GetType() == typeof(CompTextBox))
                 {
                     CompTextBox textBox = (CompTextBox)componenteBase;
 
-                    if (modoExibicao == tipoExibicaoPanel.Editar || modoExibicao == tipoExibicaoPanel.Exibir)
-                    {
-                        if (dadosCarregados.Table.Columns.Contains(textBox.SQL.campoSQL))//Aqui ele mantem o filtro de pesquisa quando clica em pesquisar
-                            valorComponente = dadosCarregados[textBox.SQL.campoSQL].ToString() ?? "";
-                    }
-                    else if (modoExibicao == tipoExibicaoPanel.Pesquisar && isPostBack)
-                    {
-                        valorComponente = Form[textBox.SQL.campoSQL];
-                    }
+                    if (modoExibicao == tipoExibicaoPanel.Pesquisar && isPostBack)
+                        valorComponente = Form[componenteBase.SQL.campoSQL]; //Aqui ele mantem o filtro de pesquisa quando clica em pesquisar
 
                     textBox.Valor = valorComponente;
                     componenteCriado = modoExibicao == tipoExibicaoPanel.Exibir ?
                         textBox.MontarComponenteExibicao(textBox) :
-                        textBox.MontarComponente(textBox);
+                        textBox.MontarComponente(textBox, exibirTagObrigatoria);
+                }
+                else if (componenteBase.GetType() == typeof(CompDropdowlist))
+                {
+                    CompDropdowlist dropdowlist = (CompDropdowlist)componenteBase;
+                    if(modoExibicao == tipoExibicaoPanel.Exibir)
+                    {
+                        if (dadosCarregados.Table.Columns.Contains(dropdowlist.CampoSqlListagem))
+                            valorComponente = dadosCarregados[dropdowlist.CampoSqlListagem].ToString() ?? "";
+                    }
+
+                    dropdowlist.Valor = valorComponente;
+                    componenteCriado = modoExibicao == tipoExibicaoPanel.Exibir ?
+                        dropdowlist.MontarComponenteExibicao(dropdowlist) :
+                        dropdowlist.MontarComponente(dropdowlist, exibirTagObrigatoria);
                 }
 
                 panelRow.Controls.Add(componenteCriado);
@@ -132,8 +154,13 @@ public class NautaUiBuilder
             if (componente.Modulos.Listagem)
             {
                 string dataField = "";
-
                 dataField = componente.SQL.campoSQL;
+
+                if(componente.GetType() == typeof(CompDropdowlist))
+                {
+                    CompDropdowlist dropdowlist = (CompDropdowlist)componente;
+                    dataField = dropdowlist.CampoSqlListagem;
+                }
 
                 gridView.Columns.Add(new BoundField
                 {
@@ -214,7 +241,7 @@ public class NautaUiBuilder
         panel.Controls.Add(btnCancelar);
 
         panel.Controls.Add(new LiteralControl(@"            </div>"));
-        panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-left"">"));
+        panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-end"">"));
 
         Button btnPesquisar = new Button();
         btnPesquisar.ID = "btnPesquisar";
@@ -394,7 +421,7 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"    <div class=""container-fluid mt-3"">"));
         panel.Controls.Add(new LiteralControl(@"        <div class=""row mob-row-buttons"">"));
         panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-left"">"));
-        
+
         if (!configFormulario.ocultarBotaoCancelarExibir)
         {
             Button btnCancelar = new Button();

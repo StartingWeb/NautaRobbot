@@ -13,6 +13,7 @@ public class NautaRepository
     public class CampoSQL
     {
         public string chave;
+        public string chaveExtra; //Para campos do tipo DropDownList
         public string valor;
         public bool valorMonetario = false;
         public bool ehTexto = true;
@@ -45,14 +46,21 @@ public class NautaRepository
                 wherePesquisa.AppendLine(" AND " + campo.chave + comparativoWhere);
             }
 
-            if (campo.valorMonetario)
-                campo.chave = " ,FORMAT(" + campo.chave + ", 'C', 'pt-BR') as  " + campo.chave + " ";
+            string chaveComponente = campo.chave;
+            if (campo.tipoComponente == typeof(CompTextBox))
+            {
+                if (campo.valorMonetario)
+                    chaveComponente = " ,FORMAT(" + campo.chave + ", 'C', 'pt-BR') as  " + campo.chave + " ";
+            }
+            else if (campo.tipoComponente == typeof(CompDropdowlist))
+                chaveComponente = campo.chaveExtra;
 
-            camposPesquisa.AppendLine(" ," + campo.chave);
+
+            camposPesquisa.AppendLine(" ," + chaveComponente);
         }
 
         return _conexao.DataTable(@"SELECT
-        " + nautaSQL.primaryKey + camposPesquisa.ToString()
+        " + nautaSQL.primaryKey + " " + nautaSQL.selectorFrom.Replace("*","") + camposPesquisa.ToString()
         + @" FROM " +
         nautaSQL.locationSelect
         + @" WHERE 1 = 1" + wherePesquisa.ToString());
@@ -182,7 +190,6 @@ public class NautaRepository
         _conexao.prm("@" + nautaSQL.primaryKey, nautaSQL.idClient.ToString());
         return _conexao.DataRow(sqlQuery);
     }
-
 
     public DataRow RetornaDadosFormularioExibicao(NautaModelSQL nautaSQL)
     {

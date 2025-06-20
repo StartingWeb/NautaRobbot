@@ -169,7 +169,8 @@ public class Nauta
         foreach (var componente in Componentes)
         {
 
-            string valorCampo = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
+            string valorComponente = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
+            string chaveExtra = "";
             bool valorMonetario = false;
 
             if (componente.GetType() == typeof(CompTextBox))
@@ -177,13 +178,19 @@ public class Nauta
                 CompTextBox textBox = (CompTextBox)componente;
                 valorMonetario = textBox.ValorMonetario;
             }
+            else if (componente.GetType() == typeof(CompDropdowlist))
+            {
+                CompDropdowlist dropdowlist = (CompDropdowlist)componente;
+                chaveExtra = dropdowlist.CampoSqlListagem;
+            }
 
             repositoryPesquisa.camposSQL.Add(new CampoSQL
             {
                 chave = componente.SQL.campoSQL,
-                valor = valorCampo,
+                valor = valorComponente,
                 valorMonetario = valorMonetario,
-                tipoComponente = componente.GetType()
+                tipoComponente = componente.GetType(),
+                chaveExtra = chaveExtra
             });
 
         }
