@@ -306,6 +306,12 @@ public class Nauta
         return debug;
     }
 
+    public NautaBuild ExcluirDados()
+    {
+        NautaRepository repositoryExclusao = new NautaRepository();
+        return repositoryExclusao.ExcluirDados(nautaSQL);
+    }
+
 
 
 

@@ -41,6 +41,9 @@ public class NautaEvents
         if (_eventosFormulario.EditarClick == null)
             _eventosFormulario.EditarClick = eventEdicaoClick;
 
+        if (_eventosFormulario.ExcluirClick == null)
+            _eventosFormulario.ExcluirClick = eventExcluirClick;
+
         if (_eventosFormulario.EditarClick_cancelar == null)
             _eventosFormulario.EditarClick_cancelar = eventEdicaoCancelarClick;
 
@@ -87,6 +90,16 @@ public class NautaEvents
     public void eventEdicaoClick(object sender, EventArgs e)
     {
         _nautaInstance.debugEventosInternos = _nautaInstance.EditarDados();
+        HttpContext.Current.Session["NautaDebugInterno"] = _nautaInstance.debugEventosInternos;
+        if (_nautaInstance.debugEventosInternos.Sucesso)
+            _nautaHelper.RedirectFormularioInicial();
+        else
+            _nautaHelper.ReloadPage();
+    }
+
+    public void eventExcluirClick(object sender, EventArgs e)
+    {
+        _nautaInstance.debugEventosInternos = _nautaInstance.ExcluirDados();
         HttpContext.Current.Session["NautaDebugInterno"] = _nautaInstance.debugEventosInternos;
         if (_nautaInstance.debugEventosInternos.Sucesso)
             _nautaHelper.RedirectFormularioInicial();

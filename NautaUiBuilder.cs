@@ -342,6 +342,18 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"            </div>"));
         panel.Controls.Add(new LiteralControl(@"            <div class=""col-lg-6 text-end"">"));
 
+        if (!configFormulario.ocultarBotaoExcluirEditar)
+        {
+            Button btnExcluir = new Button();
+            btnExcluir.ID = "btnExcluir";
+            btnExcluir.Text = "Excluir";
+            btnExcluir.Click += configFormulario.ExcluirClick;
+            btnExcluir.Attributes.Add("class", "botaoPrimaryPadrao");
+            btnExcluir.Attributes.Add("Title", "Excluir");
+            panel.Controls.Add(btnExcluir);
+        }
+
+
         //Botão editar
         Button btnEditar = new Button();
         btnEditar.ID = "btnGravarEdicao";

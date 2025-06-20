@@ -58,7 +58,7 @@ public class NautaRepository
         + @" WHERE 1 = 1" + wherePesquisa.ToString());
     }
 
-    public NautaBuild AdicionarDados(NautaModelSQL nautaSQL, string mensagemRetornoPositivo = "Dados inseridos com sucesso!")
+    public NautaBuild AdicionarDados(NautaModelSQL nautaSQL, string mensagemRetornoPositivo = "Registro inserido com sucesso!")
     {
         NautaBuild debug = new NautaBuild();
         if (this.camposSQL.Count == 0)
@@ -93,7 +93,7 @@ public class NautaRepository
         return debug;
     }
 
-    public NautaBuild EditarDados(NautaModelSQL nautaSQL, string mensagemRetornoPositivo = "Dados atualizados com sucesso!")
+    public NautaBuild EditarDados(NautaModelSQL nautaSQL, string mensagemRetornoPositivo = "Registro atualizado com sucesso!")
     {
         NautaBuild debug = new NautaBuild();
         if (this.camposSQL.Count == 0)
@@ -133,6 +133,37 @@ public class NautaRepository
                 }
             }
         }
+        return debug;
+    }
+
+    public NautaBuild ExcluirDados(NautaModelSQL nautaSQL, string mensagemRetornoPositivo = "Registro excluido com sucesso!")
+    {
+        NautaBuild debug = new NautaBuild();
+        if (nautaSQL.idClient.ToString().Equals(""))
+        {
+            debug.Sucesso = false;
+            debug.Mensagem = "Valor de identificação do registro não encontrado!";
+        }
+        else
+        {
+            TransactSQL tDelete = new TransactSQL();
+            tDelete.where(nautaSQL.primaryKey, nautaSQL.idClient.ToString());
+            tDelete.delete(nautaSQL.locationDelete);
+
+            try
+            {
+                debug.Sucesso = true;
+                debug.Mensagem = mensagemRetornoPositivo;
+                tDelete.exec();
+            }
+            catch (Exception ex)
+            {
+                debug.Sucesso = false;
+                debug.RetornoDesenvolvimento = ex.ToString();
+                debug.Mensagem = "Houve um erro ao tentar excluir os dados, entre em contato com a equipe de suporte";
+            }
+        }
+
         return debug;
     }
 

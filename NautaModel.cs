@@ -50,6 +50,8 @@ public class NautaModelFormulario
     public EventHandler ExibirClick;
     public EventHandler ExibirClick_cancelar;
 
+    public EventHandler ExcluirClick;
+
 }
 
 
