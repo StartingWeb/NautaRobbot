@@ -64,11 +64,14 @@ public class NautaUiBuilder
         Panel panelRow = new Panel();
         panelRow.Attributes.Add("class", "row");
 
-
         foreach (var componenteBase in ListComponentesUI)
         {
+            if (componenteBase.GetType() == typeof(CompFileUpload) &&
+                modoExibicao == tipoExibicaoPanel.Pesquisar) continue;
+
             if (ValidarModoExibicaoComponente(componenteBase, modoExibicao)
-                && !ValidarDuplicidadeComponentes(componentesExistentes, componenteBase))
+                && !ValidarDuplicidadeComponentes(componentesExistentes, componenteBase)
+               )
             {
                 panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-3"">"));
                 componentesExistentes.Add(componenteBase); //Validação para não duplicar campos na tela, mesmo que venha da declarativa
@@ -77,13 +80,11 @@ public class NautaUiBuilder
                 string valorComponente = "";
                 bool exibirTagObrigatoria = tipoExibicaoPanel.Inserir == modoExibicao || tipoExibicaoPanel.Editar == modoExibicao ? true : false;
 
-
                 if (modoExibicao == tipoExibicaoPanel.Editar || modoExibicao == tipoExibicaoPanel.Exibir)
                 {
                     if (dadosCarregados.Table.Columns.Contains(componenteBase.SQL.campoSQL))
                         valorComponente = dadosCarregados[componenteBase.SQL.campoSQL].ToString() ?? "";
                 }
-
 
                 if (componenteBase.GetType() == typeof(CompTextBox))
                 {
@@ -97,10 +98,31 @@ public class NautaUiBuilder
                         textBox.MontarComponenteExibicao(textBox) :
                         textBox.MontarComponente(textBox, exibirTagObrigatoria);
                 }
+                else if (componenteBase.GetType() == typeof(CompCalendario))
+                {
+                    CompCalendario calendario = (CompCalendario)componenteBase;
+                    calendario.Valor = valorComponente;
+                    componenteCriado = calendario.MontarComponente(calendario,
+                        exibirTagObrigatoria,
+                        modoExibicao == tipoExibicaoPanel.Exibir,
+                        modoExibicao == tipoExibicaoPanel.Pesquisar);
+
+                    panelRow.Controls.RemoveAt(panelRow.Controls.Count - 1); //Remove o controle que acabou de inserir
+                    panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-4"">"));
+                }
+                else if (componenteBase.GetType() == typeof(CompFileUpload))
+                {
+                    CompFileUpload fileUpload = (CompFileUpload)componenteBase;
+                    fileUpload.Valor = valorComponente;
+                    componenteCriado = fileUpload.MontarComponente(fileUpload,
+                        exibirTagObrigatoria,
+                        modoExibicao == tipoExibicaoPanel.Exibir,
+                        (modoExibicao == tipoExibicaoPanel.Inserir || modoExibicao == tipoExibicaoPanel.Editar));
+                }
                 else if (componenteBase.GetType() == typeof(CompDropdowlist))
                 {
                     CompDropdowlist dropdowlist = (CompDropdowlist)componenteBase;
-                    if(modoExibicao == tipoExibicaoPanel.Exibir)
+                    if (modoExibicao == tipoExibicaoPanel.Exibir)
                     {
                         if (dadosCarregados.Table.Columns.Contains(dropdowlist.CampoSqlListagem))
                             valorComponente = dadosCarregados[dropdowlist.CampoSqlListagem].ToString() ?? "";
@@ -156,10 +178,15 @@ public class NautaUiBuilder
                 string dataField = "";
                 dataField = componente.SQL.campoSQL;
 
-                if(componente.GetType() == typeof(CompDropdowlist))
+                if (componente.GetType() == typeof(CompDropdowlist))
                 {
                     CompDropdowlist dropdowlist = (CompDropdowlist)componente;
                     dataField = dropdowlist.CampoSqlListagem;
+                }
+                else if (componente.GetType() == typeof(CompFileUpload))
+                {
+                    CompFileUpload fileUpload = (CompFileUpload)componente;
+                    dataField = fileUpload.CampoSqlListagem;
                 }
 
                 gridView.Columns.Add(new BoundField
@@ -208,7 +235,7 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"            <h2><b>" + configFormulario.subTitulo + "</b></h2>"));
         panel.Controls.Add(new LiteralControl(@"        </div>"));
         panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-4""></div>"));
-        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3"">"));
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3 d-flex justify-content-center align-items-center"">"));
 
         if (!configFormulario.ocultarBotaoAdicionar)
         {
@@ -283,8 +310,10 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"            <span>" + configFormulario.tituloPrincipal + "</span>"));
         panel.Controls.Add(new LiteralControl(@"            <h2><b>" + configFormulario.subTitulo + "</b></h2>"));
         panel.Controls.Add(new LiteralControl(@"        </div>"));
+
         panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-4""></div>"));
-        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3""</div>>"));
+
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3""></div>"));
         panel.Controls.Add(new LiteralControl(@"    </div>"));
         panel.Controls.Add(new LiteralControl(@"</div>"));
         //Cabeçalho - FIM
@@ -345,7 +374,6 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"</div>"));
         //Cabeçalho - FIM
 
-
         panel.Controls.Add(new LiteralControl(@"<fieldSet>"));
         panel.Controls.Add(new LiteralControl(@"    <h4><b>Formulário de Edição</b></h4>"));
         panel.Controls.Add(new LiteralControl(@"    <hr/>"));
@@ -380,7 +408,6 @@ public class NautaUiBuilder
             panel.Controls.Add(btnExcluir);
         }
 
-
         //Botão editar
         Button btnEditar = new Button();
         btnEditar.ID = "btnGravarEdicao";
@@ -408,8 +435,10 @@ public class NautaUiBuilder
         panel.Controls.Add(new LiteralControl(@"            <span>" + configFormulario.tituloPrincipal + "</span>"));
         panel.Controls.Add(new LiteralControl(@"            <h2><b>" + configFormulario.subTitulo + "</b></h2>"));
         panel.Controls.Add(new LiteralControl(@"        </div>"));
+
         panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-4""></div>"));
-        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3""</div>>"));
+
+        panel.Controls.Add(new LiteralControl(@"        <div class=""col-lg-3""></div>"));
         panel.Controls.Add(new LiteralControl(@"    </div>"));
         panel.Controls.Add(new LiteralControl(@"</div>"));
         //Cabeçalho - FIM

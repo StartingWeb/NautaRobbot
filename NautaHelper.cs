@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -23,6 +25,31 @@ public class NautaHelper
             {
                 TextBox textBox = (TextBox)panel.FindControl(componenteBase.SQL.campoSQL);
                 if (textBox != null) valorComponente = textBox.Text;
+            }
+            else if (componente.GetType() == typeof(CompCalendario))
+            {
+                if (panel.ID.Contains("Pesquisa"))
+                {
+                    NameValueCollection Form = HttpContext.Current.Request.Form;
+                    string prefixo = "ctl00$body$";
+                    string dataInicio = Form[prefixo + componenteBase.SQL.campoSQL + "_De"];
+                    string dataFim = Form[prefixo + componenteBase.SQL.campoSQL + "_Ate"];
+
+                    if (!dataInicio.Equals(""))
+                        dataInicio = DateTime.Parse(dataInicio).ToString();
+                    else dataInicio = DateTime.Parse("01/01/1900").ToString();
+
+                    if (!dataFim.Equals(""))
+                        dataFim = DateTime.Parse(dataFim).ToString();
+                    else dataFim = DateTime.Parse("01/01/2500").ToString();
+
+                    valorComponente = dataInicio + "," + dataFim;
+                }
+                else
+                {
+                    TextBox calendario = (TextBox)panel.FindControl(componenteBase.SQL.campoSQL);
+                    if (calendario != null) valorComponente = calendario.Text;
+                }
             }
             else if (componente.GetType() == typeof(CompDropdowlist))
             {

@@ -139,8 +139,8 @@ public class Nauta
             tabelaNova.Rows.Add(novaLinha);
         }
 
-        if (dicionarioRodape.Count > 0)
-            tabelaNova.Rows.Add(RetornaLinhaRodapeListagem(dicionarioRodape, tabelaNova));
+        //if (dicionarioRodape.Count > 0)
+        //tabelaNova.Rows.Add(RetornaLinhaRodapeListagem(dicionarioRodape, tabelaNova));
 
         return tabelaNova;
     }
@@ -168,27 +168,31 @@ public class Nauta
         NautaRepository repositoryPesquisa = new NautaRepository();
         foreach (var componente in Componentes)
         {
-
-            string valorComponente = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
+            string valorComponente = _helper.RecuperaValorComponentePanel(_nautaModel.panelPesquisar, componente) ?? "";
             string chaveExtra = "";
-            bool valorMonetario = false;
+            bool isMonetario = false;
 
             if (componente.GetType() == typeof(CompTextBox))
             {
                 CompTextBox textBox = (CompTextBox)componente;
-                valorMonetario = textBox.ValorMonetario;
+                isMonetario = textBox.ValorMonetario;
             }
             else if (componente.GetType() == typeof(CompDropdowlist))
             {
                 CompDropdowlist dropdowlist = (CompDropdowlist)componente;
                 chaveExtra = dropdowlist.CampoSqlListagem;
             }
+            else if (componente.GetType() == typeof(CompFileUpload))
+            {
+                CompFileUpload fileUpload = (CompFileUpload)componente;
+                chaveExtra = fileUpload.CampoSqlListagem;
+            }
 
             repositoryPesquisa.camposSQL.Add(new CampoSQL
             {
                 chave = componente.SQL.campoSQL,
                 valor = valorComponente,
-                valorMonetario = valorMonetario,
+                valorMonetario = isMonetario,
                 tipoComponente = componente.GetType(),
                 chaveExtra = chaveExtra
             });
@@ -211,14 +215,27 @@ public class Nauta
         {
             foreach (var componente in Componentes)
             {
-                string valorComponente = _helper.RecuperaValorComponentePanel(_nautaModel.panelEditar, componente) ?? "";
-
-                if (componente.SQL.acaoSQLInsert)
+                string valorComponente = _helper.RecuperaValorComponentePanel(_nautaModel.panelInserir, componente) ?? "";
+                if (!valorComponente.Equals(""))
                 {
                     if (valorComponente.Equals("") && !componente.SQL.valorPadrao.Equals(""))
                         valorComponente = componente.SQL.valorPadrao;
 
-                    if (!valorComponente.Equals(""))
+
+                    //Salva o arquivo antes de ir para o sql
+                    if (componente.GetType() == typeof(CompFileUpload))
+                    {
+                        CompFileUpload fileUpload = (CompFileUpload)componente;
+                        FileUpload fileUploadPanel = (FileUpload)_nautaModel.panelInserir
+                            .FindControl(componente.SQL.campoSQL);
+
+                        //Nota: Colocar um tratamento aqui se começar a dar erro!
+                        fileUpload.salvarArquivo(fileUploadPanel, fileUpload.SavePathImage);
+                        valorComponente = fileUpload.SavePathImage + fileUploadPanel.FileName;
+                    }
+
+
+                    if (componente.SQL.acaoSQLInsert)
                     {
                         repositoryAdicao.camposSQL.Add(new CampoSQL
                         {
@@ -273,14 +290,26 @@ public class Nauta
                 if (valorComponente.Equals("") && !componente.SQL.valorPadrao.Equals(""))
                     valorComponente = componente.SQL.valorPadrao;
 
-                if (componente.SQL.acaoSQLUpdate)
+                // Salva o arquivo antes de ir para o sql
+                if (componente.GetType() == typeof(CompFileUpload))
                 {
-                    if (!valorComponente.Equals(""))
+                    CompFileUpload fileUpload = (CompFileUpload)componente;
+                    FileUpload fileUploadPanel = (FileUpload)_nautaModel.panelEditar
+                        .FindControl(componente.SQL.campoSQL);
+
+                    //Nota: Colocar um tratamento aqui se começar a dar erro!
+                    fileUpload.salvarArquivo(fileUploadPanel, fileUpload.SavePathImage);
+                    valorComponente = fileUpload.SavePathImage + fileUploadPanel.FileName;
+                }
+
+                if (!valorComponente.Equals(""))
+                {
+                    if (componente.SQL.acaoSQLUpdate)
                     {
                         repositoryEdicao.camposSQL.Add(new CampoSQL
                         {
                             chave = componente.SQL.campoSQL,
-                            valor = valorComponente
+                            valor = valorComponente,
                         });
                     }
                     else if (valorComponente.Equals("") && componente.Config.campoObrigatorio)

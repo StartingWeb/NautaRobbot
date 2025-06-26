@@ -19,13 +19,15 @@ public class Ambiente
     public Ambiente()
     {
         tipoAmbiente ambiente = RetornarAmbienteAtual(Inicializador.urlHttpApplication);
+        string dataBase = Inicializador.dataBase;
+
 
         if (ambiente != tipoAmbiente.Localhost)
-            Inicializador.dataBase += ambiente == tipoAmbiente.Teste ? "_T" : "_P";
+            dataBase += ambiente == tipoAmbiente.Teste ? "_T" : "_P";
 
         connectionString = string.Format("Data Source={0};Initial Catalog={1};User ID={2};Password={3};",
               Inicializador.dataSource,
-              Inicializador.dataBase,
+              dataBase,
               Inicializador.userSQL,
               Inicializador.passwordSQL);
     }

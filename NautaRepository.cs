@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,34 +34,67 @@ public class NautaRepository
 
         foreach (CampoSQL campo in camposSQL)
         {
+
             if (!campo.valor.Equals(""))
             {
-                _conexao.prm("@" + campo.chave, campo.valor);
-
-                string comparativoWhere = "@" + campo.chave;
                 if (campo.tipoComponente == typeof(CompTextBox))
-                    comparativoWhere = " like '%'+ " + comparativoWhere + "+'%'";
-                else
-                    comparativoWhere = " = " + comparativoWhere;
+                {
+                    _conexao.prm("@" + campo.chave, campo.valor);
+                    wherePesquisa.AppendLine(" AND " + campo.chave + " like '%'+ @" + campo.chave + " +'%'");
+                }
+                else if (campo.tipoComponente == typeof(CompCalendario))
+                {
+                    wherePesquisa.AppendLine(" AND (1 = 1 ");
 
-                wherePesquisa.AppendLine(" AND " + campo.chave + comparativoWhere);
+                    var partes = campo.valor.Split(',');
+                    string dataInicial = ("" + partes[0]).ToString().Trim();
+                    if (!dataInicial.Equals(""))
+                    {
+                        _conexao.prm("@" + campo.chave + "_de", dataInicial); // envia como DateTime
+                        wherePesquisa.AppendLine(" AND CONVERT(DATE, " + campo.chave + ") >= @" + campo.chave + "_de");
+                    }
+
+                    string dataFinal = ("" + partes[1]).Trim();
+                    if (!dataFinal.Equals(""))
+                    {
+                        _conexao.prm("@" + campo.chave + "_ate", dataFinal);
+                        wherePesquisa.AppendLine(" AND CONVERT(DATE, " + campo.chave + ") <= @" + campo.chave + "_ate");
+                    }
+
+                    wherePesquisa.AppendLine(" OR " + campo.chave + " is Null )");
+
+                    /*
+                     Bug a corrigir: Ele tras o filtro de pesquisa baseado na data mas traz o null também.
+                    Precisa pensar num jeito de quando as datas forem as extremas ele filtrar com o is null;
+                    se não for os extremos filtrar apenas as datas;
+                    */
+                }
+
+                else
+                {
+                    _conexao.prm("@" + campo.chave, campo.valor);
+                    wherePesquisa.AppendLine(" AND " + campo.chave + " = @" + campo.chave);
+                }
             }
 
-            string chaveComponente = campo.chave;
+
             if (campo.tipoComponente == typeof(CompTextBox))
             {
                 if (campo.valorMonetario)
-                    chaveComponente = " ,FORMAT(" + campo.chave + ", 'C', 'pt-BR') as  " + campo.chave + " ";
+                    camposPesquisa.AppendLine(" FORMAT(" + campo.chave + ", 'C', 'pt-BR') as  " + campo.chave);
+                else
+                    camposPesquisa.AppendLine(" ," + campo.chave);
             }
+            else if (campo.tipoComponente == typeof(CompCalendario))
+                camposPesquisa.AppendLine(" ," + campo.chave);
             else if (campo.tipoComponente == typeof(CompDropdowlist))
-                chaveComponente = campo.chaveExtra;
-
-
-            camposPesquisa.AppendLine(" ," + chaveComponente);
+                camposPesquisa.AppendLine(" ," + campo.chaveExtra);
+            else if (campo.tipoComponente == typeof(CompFileUpload))
+                camposPesquisa.AppendLine(" ," + campo.chaveExtra);
         }
 
         return _conexao.DataTable(@"SELECT
-        " + nautaSQL.primaryKey + " " + nautaSQL.selectorFrom.Replace("*","") + camposPesquisa.ToString()
+        " + nautaSQL.primaryKey + " " + nautaSQL.selectorFrom.Replace("*", "") + camposPesquisa.ToString()
         + @" FROM " +
         nautaSQL.locationSelect
         + @" WHERE 1 = 1" + wherePesquisa.ToString());

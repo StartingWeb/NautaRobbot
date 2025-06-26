@@ -25,7 +25,7 @@ namespace NautaRobbot
     public class CompBase_SQL
     {
         public string campoSQL { get; set; } = "";
-        public string valorPadrao { get; set; }
+        public string valorPadrao { get; set; } = "";
         public bool acaoSQLInsert { get; set; } = false;
         public bool acaoSQLUpdate { get; set; } = false;
 
