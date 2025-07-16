@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.UI.WebControls;
 using System.Web.UI;
 using NautaRobbot.Helpers;
+using System.Diagnostics;
 
 public class CompFileUpload : CompBase
 {
@@ -130,12 +131,15 @@ public class CompFileUpload : CompBase
             }
             catch (Exception ex)
             {
+
+                throw new Exception("Erro NautaDebug: " + ex.ToString());
                 // Log de erro
                 //HttpContext.Current.Response.Write("Erro ao salvar o arquivo: " + ex.Message);
             }
         }
         else
         {
+            //throw new Exception("Erro NautaDebug: Nenhum arquivo selecionado");
             // Log quando nenhum arquivo foi selecionado
             //HttpContext.Current.Response.Write("Por favor, selecione um arquivo para upload.");
         }

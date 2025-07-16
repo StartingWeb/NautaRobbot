@@ -26,6 +26,10 @@ public class NautaHelper
                 TextBox textBox = (TextBox)panel.FindControl(componenteBase.SQL.campoSQL);
                 if (textBox != null) valorComponente = textBox.Text;
             }
+            else if (componente.GetType() == typeof(CompFileUpload))
+            {
+
+            }
             else if (componente.GetType() == typeof(CompCalendario))
             {
                 if (panel.ID.Contains("Pesquisa"))
@@ -57,6 +61,22 @@ public class NautaHelper
                 if (dropDownList != null) valorComponente = dropDownList.SelectedValue;
             }
         }
+        return valorComponente;
+    }
+
+    public string RecuperarValorComponenteFileUpload(Panel panel, CompFileUpload componente)
+    {
+        string valorComponente = "";
+        CompFileUpload fileUpload = (CompFileUpload)componente;
+        FileUpload fileUploadPanel = (FileUpload)panel.FindControl(componente.SQL.campoSQL);
+
+        //Nota: Colocar um tratamento aqui se começar a dar erro!
+        if (fileUploadPanel.HasFile)
+        {
+            fileUpload.salvarArquivo(fileUploadPanel, fileUpload.SavePathImage);
+            valorComponente = fileUpload.SavePathImage + fileUploadPanel.FileName;
+        }
+
         return valorComponente;
     }
 

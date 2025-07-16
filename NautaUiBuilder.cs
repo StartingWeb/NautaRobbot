@@ -118,6 +118,9 @@ public class NautaUiBuilder
                         exibirTagObrigatoria,
                         modoExibicao == tipoExibicaoPanel.Exibir,
                         (modoExibicao == tipoExibicaoPanel.Inserir || modoExibicao == tipoExibicaoPanel.Editar));
+
+                    panelRow.Controls.RemoveAt(panelRow.Controls.Count - 1); //Remove o controle que acabou de inserir
+                    panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-4"">"));
                 }
                 else if (componenteBase.GetType() == typeof(CompDropdowlist))
                 {

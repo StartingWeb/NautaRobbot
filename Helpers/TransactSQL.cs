@@ -227,6 +227,8 @@ public class TransactSQL
             }
             else if (campo.StartsWith("flo_"))
             {
+                valor = valor.Trim();
+                valor = valor.Replace("R$", "");
                 if (!valor.ToLower().Contains("isnull"))
                     valor = valor.Replace(".", "").Replace(",", ".");
             }

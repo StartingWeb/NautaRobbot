@@ -22,7 +22,7 @@ public class CompTextBox : CompBase
     {
         TextBox txt = new TextBox();
         txt.ID = componente.SQL.campoSQL;
-        txt.Text = componente.ValorMonetario ?
+        txt.Text = componente.ValorMonetario && componente.Valor != "" ?
             Fac.convertMonetary(Fac.convertDouble(componente.Valor)) :
             componente.Valor;
 

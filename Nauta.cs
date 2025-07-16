@@ -216,24 +216,15 @@ public class Nauta
             foreach (var componente in Componentes)
             {
                 string valorComponente = _helper.RecuperaValorComponentePanel(_nautaModel.panelInserir, componente) ?? "";
-                if (!valorComponente.Equals(""))
+
+                //Salva o arquivo antes de ir para o sql
+                if (componente.GetType() == typeof(CompFileUpload))
+                    valorComponente = _helper.RecuperarValorComponenteFileUpload(_nautaModel.panelInserir, (CompFileUpload)componente);
+
+                if (!valorComponente.Equals("") || !componente.SQL.valorPadrao.Equals(""))
                 {
                     if (valorComponente.Equals("") && !componente.SQL.valorPadrao.Equals(""))
                         valorComponente = componente.SQL.valorPadrao;
-
-
-                    //Salva o arquivo antes de ir para o sql
-                    if (componente.GetType() == typeof(CompFileUpload))
-                    {
-                        CompFileUpload fileUpload = (CompFileUpload)componente;
-                        FileUpload fileUploadPanel = (FileUpload)_nautaModel.panelInserir
-                            .FindControl(componente.SQL.campoSQL);
-
-                        //Nota: Colocar um tratamento aqui se começar a dar erro!
-                        fileUpload.salvarArquivo(fileUploadPanel, fileUpload.SavePathImage);
-                        valorComponente = fileUpload.SavePathImage + fileUploadPanel.FileName;
-                    }
-
 
                     if (componente.SQL.acaoSQLInsert)
                     {
@@ -290,19 +281,11 @@ public class Nauta
                 if (valorComponente.Equals("") && !componente.SQL.valorPadrao.Equals(""))
                     valorComponente = componente.SQL.valorPadrao;
 
-                // Salva o arquivo antes de ir para o sql
+                //Salva o arquivo antes de ir para o sql
                 if (componente.GetType() == typeof(CompFileUpload))
-                {
-                    CompFileUpload fileUpload = (CompFileUpload)componente;
-                    FileUpload fileUploadPanel = (FileUpload)_nautaModel.panelEditar
-                        .FindControl(componente.SQL.campoSQL);
+                    valorComponente = _helper.RecuperarValorComponenteFileUpload(_nautaModel.panelEditar, (CompFileUpload)componente);
 
-                    //Nota: Colocar um tratamento aqui se começar a dar erro!
-                    fileUpload.salvarArquivo(fileUploadPanel, fileUpload.SavePathImage);
-                    valorComponente = fileUpload.SavePathImage + fileUploadPanel.FileName;
-                }
-
-                if (!valorComponente.Equals(""))
+                if (!valorComponente.Equals("") || !componente.SQL.valorPadrao.Equals(""))
                 {
                     if (componente.SQL.acaoSQLUpdate)
                     {

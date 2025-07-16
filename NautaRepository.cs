@@ -81,7 +81,7 @@ public class NautaRepository
             if (campo.tipoComponente == typeof(CompTextBox))
             {
                 if (campo.valorMonetario)
-                    camposPesquisa.AppendLine(" FORMAT(" + campo.chave + ", 'C', 'pt-BR') as  " + campo.chave);
+                    camposPesquisa.AppendLine(" ,FORMAT(" + campo.chave + ", 'C', 'pt-BR') as  " + campo.chave);
                 else
                     camposPesquisa.AppendLine(" ," + campo.chave);
             }
