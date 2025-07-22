@@ -45,7 +45,20 @@ public class CompCalendario : CompBase
         TextBox calendario = new TextBox();
         calendario.ID = idHTML.Equals("") ? componente.SQL.campoSQL : idHTML;
 
-        if (!componente.Valor.Equals("")) calendario.Text = componente.Valor;
+        if (!string.IsNullOrWhiteSpace(componente.Valor))
+        {
+            if (DateTime.TryParse(componente.Valor.Split(' ')[0], out DateTime data))
+            {
+                // Formata no padrão aceito pelo input type="date"
+                calendario.Text = data.ToString("yyyy-MM-dd");
+            }
+            else
+            {
+                // Se não for uma data válida, atribui como está (opcional)
+                calendario.Text = componente.Valor;
+            }
+        }
+
         if (!componente.HTML.atributo.Equals("") && !componente.HTML.atributoValor.Equals(""))
             calendario.Attributes
                 .Add(componente.HTML.atributo, componente.HTML.atributoValor);

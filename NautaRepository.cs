@@ -93,11 +93,14 @@ public class NautaRepository
                 camposPesquisa.AppendLine(" ," + campo.chaveExtra);
         }
 
+        if (!nautaSQL.where.Equals("")) wherePesquisa.AppendLine(" AND " + nautaSQL.where);
+
         return _conexao.DataTable(@"SELECT
         " + nautaSQL.primaryKey + " " + nautaSQL.selectorFrom.Replace("*", "") + camposPesquisa.ToString()
         + @" FROM " +
         nautaSQL.locationSelect
-        + @" WHERE 1 = 1" + wherePesquisa.ToString());
+        + @" WHERE 1 = 1" + wherePesquisa.ToString()
+        + (!nautaSQL.orderBy.Equals("") ? " ORDER BY " + nautaSQL.orderBy : ""));
     }
 
     public NautaBuild AdicionarDados(NautaModelSQL nautaSQL, string mensagemRetornoPositivo = "Registro inserido com sucesso!")

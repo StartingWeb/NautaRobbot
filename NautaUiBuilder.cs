@@ -108,7 +108,8 @@ public class NautaUiBuilder
                         modoExibicao == tipoExibicaoPanel.Pesquisar);
 
                     panelRow.Controls.RemoveAt(panelRow.Controls.Count - 1); //Remove o controle que acabou de inserir
-                    panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-4"">"));
+                    if(modoExibicao == tipoExibicaoPanel.Pesquisar) panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-5"">"));
+                    else panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-3"">"));
                 }
                 else if (componenteBase.GetType() == typeof(CompFileUpload))
                 {
