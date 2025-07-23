@@ -676,7 +676,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\empre\\.nuget\\packages\\": {},
+    "C:\\Users\\Starting Web\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
@@ -685,14 +685,14 @@
       "projectUniqueName": "C:\\StartingWeb\\NautaRobbot\\NautaRobbot.csproj",
       "projectName": "NautaRobbot",
       "projectPath": "C:\\StartingWeb\\NautaRobbot\\NautaRobbot.csproj",
-      "packagesPath": "C:\\Users\\empre\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\Starting Web\\.nuget\\packages\\",
       "outputPath": "C:\\StartingWeb\\NautaRobbot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\empre\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Starting Web\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -719,7 +719,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net48": {
@@ -738,7 +738,7 @@
             "version": "[4.3.4, )"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201\\RuntimeIdentifierGraph.json"
       }
     }
   }
