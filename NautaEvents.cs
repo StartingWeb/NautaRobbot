@@ -26,6 +26,9 @@ public class NautaEvents
         if (_eventosFormulario.PesquisarClick == null)
             _eventosFormulario.PesquisarClick = eventPesquisarClick;
 
+        if (_eventosFormulario.PesquisarAdicionarClick == null)
+            _eventosFormulario.PesquisarAdicionarClick = eventPesquisarAdicionarClick;
+
         if (_eventosFormulario.PesquisarClick_cancelar == null)
             _eventosFormulario.PesquisarClick_cancelar = eventPesquisarCancelarClick;
 
@@ -58,6 +61,12 @@ public class NautaEvents
     {
         _nautaInstance.debugEventosInternos = _nautaInstance.PesquisarDados();
         HttpContext.Current.Session["NautaDebugInterno"] = _nautaInstance.debugEventosInternos;
+    }
+
+    public void eventPesquisarAdicionarClick(object sender, EventArgs e)
+    {
+        string url = HttpContext.Current.Request.Url.AbsolutePath.ToString() ?? "";
+        HttpContext.Current.Response.Redirect(url + "?modo=i");
     }
 
     public void eventPesquisarCancelarClick(object sender, EventArgs e)

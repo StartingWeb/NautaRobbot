@@ -108,7 +108,7 @@ public class NautaUiBuilder
                         modoExibicao == tipoExibicaoPanel.Pesquisar);
 
                     panelRow.Controls.RemoveAt(panelRow.Controls.Count - 1); //Remove o controle que acabou de inserir
-                    if(modoExibicao == tipoExibicaoPanel.Pesquisar) panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-5"">"));
+                    if (modoExibicao == tipoExibicaoPanel.Pesquisar) panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-5"">"));
                     else panelRow.Controls.Add(new LiteralControl(@"<div class=""col-lg-3"">"));
                 }
                 else if (componenteBase.GetType() == typeof(CompFileUpload))
@@ -243,10 +243,13 @@ public class NautaUiBuilder
 
         if (!configFormulario.ocultarBotaoAdicionar)
         {
-            panel.Controls.Add(new LiteralControl(@"        <button class=""botaoPrimaryPadrao"" 
-                                                            onclick=""window.location.href='?modo=i'; return false;"">
-                                                                Adicionar
-                                                            </button>"));
+            //Button cancelar
+            Button btnAdicionar = new Button();
+            btnAdicionar.ID = "BotaoAdicionarPesquisaClick";
+            btnAdicionar.Text = "Adicionar";
+            btnAdicionar.Click += configFormulario.PesquisarAdicionarClick;
+            btnAdicionar.Attributes.Add("class", "botaoPrimaryPadrao");
+            panel.Controls.Add(btnAdicionar);
         }
 
         panel.Controls.Add(new LiteralControl(@"        </div>"));

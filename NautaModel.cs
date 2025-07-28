@@ -40,6 +40,7 @@ public class NautaModelFormulario
     //Eventos
     public EventHandler PesquisarClick;
     public EventHandler PesquisarClick_cancelar;
+    public EventHandler PesquisarAdicionarClick;
 
     public EventHandler AdicionarClick;
     public EventHandler AdicionarClick_cancelar;
